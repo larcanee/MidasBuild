@@ -1,42 +1,70 @@
-using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
+
 
 public class SpawnManager : MonoBehaviour
 {
-    public GameObject enemyPrefab1; // Prefab of the first type of enemy
-    public GameObject enemyPrefab2; // Prefab of the second type of enemy
-    public float spawnIntervalMin = 2f; // Minimum time between spawns
-    public float spawnIntervalMax = 5f; // Maximum time between spawns
-    public int initialEnemies = 5; // Number of enemies to spawn at the start
-    public bool stop = false;
-    public List<Transform> spawnpoints;
+    [Header("Enemy Prefabs")]
+    public GameObject enemyPrefab1 = null;
+    public GameObject enemyPrefab2 = null;
+    public EnemyCounter enemyCounter = null;
 
+    [Header("Spawn Rate Settings")]
+    [Tooltip("How many enemies to spawn at the start of the game.")]
+    public int initialEnemies = 5;
+    [Tooltip("How long (in seconds) before the late game is considered to begin.")]
+    public float lateGameSeconds = 480f;
+    [Tooltip(
+        "If true, the spawn rate will stop changing once the late game is reached.\n" +
+        "If false, the spawn rate will continue decreasing forever, eventually spawning enemies every frame."
+    )]
+    public bool clampSpawnRates = true;
+
+    [Header("Spawn Rate in the Early Game")]
+    public float earlyMinInterval = 5f;
+    public float earlyMaxInterval = 10f;
+
+    [Header("Spawn Rate in the Late Game")]
+    public float lateMinInterval = 0.25f;
+    public float lateMaxInterval = 0.5f;
+
+    [Header("Spawn Points")]
+    public List<Transform> spawnpoints = new();
+
+
+    private float startTime;
     private float nextSpawnTime; // Time to spawn the next enemy
+    public bool start = false;
 
-    public EnemyCounter enemyCounter_;
 
     void Start()
     {
+        
+    }
+
+    public void StartSpawn()
+    {
+        startTime = Time.time;
+        // Schedule the first spawn
+        ScheduleNextSpawnTime();
         // Spawn the initial wave of enemies
         for (int i = 0; i < initialEnemies; i++)
         {
             SpawnEnemy();
         }
-        // Schedule the first spawn
-        nextSpawnTime = Time.time + Random.Range(spawnIntervalMin, spawnIntervalMax);
+        start = true;
+
     }
 
     void Update()
     {
         // Check if it's time to spawn a new enemy
-        if (Time.time >= nextSpawnTime && !stop)
+        if (Time.time >= nextSpawnTime  && start)
         {
             SpawnEnemy();
 
             // Schedule the next spawn time
-            nextSpawnTime = Time.time + Random.Range(spawnIntervalMin, spawnIntervalMax);
+            ScheduleNextSpawnTime();
         }
     }
 
@@ -55,6 +83,25 @@ public class SpawnManager : MonoBehaviour
 
         // Instantiate the chosen type of enemy at the calculated position
         GameObject enemy = Instantiate(enemyToSpawn, spawnPosition, Quaternion.identity);
-        enemy.GetComponent<Health>().enemyCounter = enemyCounter_;
+        enemy.GetComponent<Health>().enemyCounter = enemyCounter;
+    }
+
+    void ScheduleNextSpawnTime()
+    {
+        float timeElapsed = Time.time - startTime;
+        float gameProgress = timeElapsed / lateGameSeconds;
+        float minInterval;
+        float maxInterval;
+        if (clampSpawnRates)
+        {
+            minInterval = Mathf.Lerp(earlyMinInterval, lateMinInterval, gameProgress);
+            maxInterval = Mathf.Lerp(earlyMaxInterval, lateMaxInterval, gameProgress);
+        }
+        else
+        {
+            minInterval = Mathf.LerpUnclamped(earlyMinInterval, lateMinInterval, gameProgress);
+            maxInterval = Mathf.LerpUnclamped(earlyMaxInterval, lateMaxInterval, gameProgress);
+        }
+        nextSpawnTime = Time.time + Random.Range(minInterval, maxInterval);
     }
 }

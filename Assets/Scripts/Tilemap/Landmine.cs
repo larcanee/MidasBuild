@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class Landmine : MonoBehaviour
 {
-    int damage = 3;
+    public int damage = 3;
     bool destroyed;
     bool active = false;
     float explosion_length = 0.5f;

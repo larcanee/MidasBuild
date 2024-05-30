@@ -20,6 +20,14 @@ public class Mana : MonoBehaviour
     [Tooltip("Maximum mana.")]
     [Min(0)]
     public int maxMana = 100;
+    [Tooltip(
+        "If false, starts with the maximum mana.\n" +
+        "If true, starts with the initial mana."
+    )]
+    public bool useInitialMana = false;
+    [Tooltip("Initial mana. Only used if useInitialMana is true.")]
+    [Min(0)]
+    public int initialMana = 100;
     [Tooltip("Whether or not mana will regenerate.")]
     public bool regeneration = true;
     [Tooltip("How long (in seconds) after using mana before it will begin to regenerate.")]
@@ -55,7 +63,8 @@ public class Mana : MonoBehaviour
 
     private void Start()
     {
-        mana = maxMana;
+        mana = useInitialMana ? initialMana : maxMana;
+        StartDelayingRegeneration();
     }
 
     private void Update()

@@ -8,6 +8,8 @@ TagManager:
   - Lightning
   - Egg
   - Reticle
+  - Gear
+  - StartScreen
   layers:
   - Default
   - TransparentFX

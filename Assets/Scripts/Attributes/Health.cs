@@ -15,7 +15,6 @@ HOW TO USE:
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
-using TMPro;
 
 
 public class Health : MonoBehaviour
@@ -24,6 +23,14 @@ public class Health : MonoBehaviour
     [Tooltip("Maximum health.")]
     [Min(0)]
     public int maxHealth = 100;
+    [Tooltip(
+        "If false, starts with the maximum health.\n" +
+        "If true, starts with the initial health."
+    )]
+    public bool useInitialHealth = false;
+    [Tooltip("Initial health. Only used if useInitialHealth is true.")]
+    [Min(0)]
+    public int initialHealth = 100;
     [Tooltip("Whether or not health will regenerate.")]
     public bool healthRegeneration = false;
 
@@ -34,6 +41,14 @@ public class Health : MonoBehaviour
     [Tooltip("Maximum shield.")]
     [Min(0)]
     public int maxShield = 100;
+    [Tooltip(
+        "If false, starts with the maximum shield.\n" +
+        "If true, starts with the initial shield."
+    )]
+    public bool useInitialShield = false;
+    [Tooltip("Initial shield. Only used if useInitialShield is true.")]
+    [Min(0)]
+    public int initialShield = 100;
     [Tooltip("Whether or not shield will regenerate.")]
     public bool shieldRegeneration = true;
 
@@ -68,6 +83,7 @@ public class Health : MonoBehaviour
     
     public EnemyCounter enemyCounter;
     public GameObject Player_Animation; //only exists in the context of the player
+    public GameController gameController;
 
     // Damages the player or NPC.
     // `Damage(damage)` should be used instead of `health -= damage`.
@@ -132,14 +148,19 @@ public class Health : MonoBehaviour
                 Destroy(Player_Animation);
             }
             Destroy(gameObject);
+            if (gameObject.CompareTag("Player"))
+            {
+                gameController.Lose();
+            }
         }
     }
 
 
     private void Start()
     {
-        health = maxHealth;
-        shield = maxShield;
+        health = useInitialHealth ? initialHealth : maxHealth;
+        shield = useInitialShield ? initialShield : maxShield;
+        StartDelayingRegeneration();
     }
 
     private void Update()

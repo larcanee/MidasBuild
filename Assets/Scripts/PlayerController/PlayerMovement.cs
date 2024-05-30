@@ -16,6 +16,8 @@ using UnityEngine;
 
 using static InputUtils;
 
+using TMPro;
+
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerMovement : MonoBehaviour
@@ -40,6 +42,10 @@ public class PlayerMovement : MonoBehaviour
     [Header("Fast Speed")]
     [Tooltip("Whether or not moving fast is enabled.")]
     public bool canMoveFast = false;
+    [Tooltip("Stamina used while moving fast. Ignored if null.")]
+    public Stamina stamina = null;
+    [Tooltip("Stamina used per second while moving fast. Ignored if stamina is null.")]
+    public float staminaPerSecond = 20f;
     [Tooltip("Speed when moving fast, in units per second.")]
     public float fastSpeed = 7f;
     [Tooltip("The name of the input axis for moving fast.")]
@@ -58,6 +64,14 @@ public class PlayerMovement : MonoBehaviour
     )]
     public float deadzone = 0.19f;
 
+    [Header("Animation")]
+    [Tooltip("The animator for the player.")]
+    public Animator animator = null;
+    [Tooltip("Name of the animator's moving state.")]
+    public string movingState = "isWalking";
+    [Tooltip("The minimum speed that is considered moving.")]
+    public float minMovingSpeed = 0.1f;
+
 
     public Vector2 direction { get; private set; } = Vector2.zero;
 
@@ -67,15 +81,18 @@ public class PlayerMovement : MonoBehaviour
 
     private Rigidbody2D rb2d = null;
     private Vector2 acceleration = Vector2.zero;
+    private float timeSinceLastUsedStamina = -1f;
 
-    public Animator midasAnimator;
+    public GameController gameController;
+    public TMP_Text gearCount;
 
 
     private void Start()
     {
         rb2d = GetComponent<Rigidbody2D>();
         GetComponent<SpriteRenderer>().enabled = false;
-        midasAnimator.SetBool("isWalking", false);
+        if (animator) animator.SetBool(movingState, false);
+        gearCount.text = "Gears Collected: 0";
     }
 
     private void Update()
@@ -93,14 +110,10 @@ public class PlayerMovement : MonoBehaviour
             ref acceleration,
             accelerationTime
         );
-
-        if (rb2d.velocity != Vector2.zero)
+        if (animator)
         {
-            midasAnimator.SetBool("isWalking", true);
-        }
-        else
-        {
-            midasAnimator.SetBool("isWalking", false);
+            bool isMoving = rb2d.velocity.sqrMagnitude > minMovingSpeed * minMovingSpeed;
+            animator.SetBool(movingState, isMoving);
         }
     }
 
@@ -129,7 +142,14 @@ public class PlayerMovement : MonoBehaviour
         }
         else if (isFast)
         {
-            speedState = SpeedState.Fast;
+            if (stamina && !stamina.UseStamina(staminaPerSecond, ref timeSinceLastUsedStamina))
+            {
+                speedState = SpeedState.Normal;
+            }
+            else
+            {
+                speedState = SpeedState.Fast;
+            }
         }
     }
 
@@ -145,6 +165,20 @@ public class PlayerMovement : MonoBehaviour
                 return fastSpeed;
             default:
                 return 0f;
+        }
+    }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.gameObject.CompareTag("Gear"))
+        {
+            other.gameObject.SetActive(false);
+            gameController.gearsCollected++;
+            gearCount.text = "Gears Collected: " + gameController.gearsCollected + "/" + gameController.maxGear;
+            if (gameController.gearsCollected >= gameController.maxGear)
+            {
+                gameController.Win();
+            }
         }
     }
 }
