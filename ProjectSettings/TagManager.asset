@@ -9,6 +9,7 @@ TagManager:
   - Egg
   - Reticle
   - Gear
+  - StartScreen
   layers:
   - Default
   - TransparentFX

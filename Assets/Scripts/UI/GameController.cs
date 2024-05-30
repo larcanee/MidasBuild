@@ -9,7 +9,7 @@ public class GameController : MonoBehaviour
     public GameObject winScreen;
     public GameObject loseScreen;
     public SpawnManager spawnManager;
-    public int maxGear = 1;
+    public int maxGear;
     public int gearsCollected = 0;
     // Start is called before the first frame update
     void Start()
@@ -23,7 +23,7 @@ public class GameController : MonoBehaviour
     public void Easy() 
     {
         startScreen.SetActive(false);
-        maxGear = 1;
+        maxGear = 5;
         spawnManager.StartSpawn();
     }
 

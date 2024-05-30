@@ -164,4 +164,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerTag: Player
-  damagePerSecond: 20
+  damagePerSecond: 150
+  meleeAnimator: {fileID: 0}

@@ -1,54 +1,67 @@
-using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 
+
+[RequireComponent(typeof(Stamina))]
 public class AttackScript : MonoBehaviour
 {
+    [Header("Objects and Animation")]
     public GameObject lightning_bolt;
     public GameObject lightning_aoe;
     public Animator midasAnimator;
-    //public float attack_cooldown;  //cooldown between attacks
-    //public float attack_time;      //time of effect for attack (minimum 1 frame)
-    //float last_attack_time; //time of last attack (must be set by attack)
-    // Start is called before the first frame update
-    void Start()
+
+    [Header("Stamina")]
+    public float boltStaminaPerSecond = 40f;
+    public float aoeStaminaPerSecond = 40f;
+
+    [Header("Controls")]
+    public List<KeyCode> boltKeys = new() { KeyCode.Z, KeyCode.Mouse0 };
+    public List<KeyCode> aoeKeys = new() { KeyCode.X, KeyCode.Mouse1 };
+
+
+    private Stamina stamina = null;
+    private float boltTime = -1f;
+    private float aoeTime = -1f;
+
+
+    private void Start()
     {
+        stamina = GetComponent<Stamina>();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        // RotationMovement();
-        //if (//(Time.time > last_attack_time + attack_cooldown)
-        //{
-        if (Input.GetKey(KeyCode.Z) || Input.GetMouseButton(0))
+        bool isUsingBolt = boltKeys.Any(key => Input.GetKey(key));
+        bool isUsingAoe = aoeKeys.Any(key => Input.GetKey(key));
+
+        // Bolt attack.
+        if (isUsingBolt && stamina.UseStamina(boltStaminaPerSecond, ref boltTime))
         {
-            lightning_bolt.SetActive(true);
-            lightning_aoe.SetActive(false);
-            midasAnimator.SetBool("isAttacking", true);
-            //last_attack_time = Time.time;
+            Attack(true, false);
         }
-        else if (Input.GetKey(KeyCode.X) || Input.GetMouseButton(1))
+        // AOE attack.
+        else if (isUsingAoe && stamina.UseStamina(aoeStaminaPerSecond, ref aoeTime))
         {
-            lightning_aoe.SetActive(true);
-            lightning_bolt.SetActive(false);
-            midasAnimator.SetBool("isAttacking", true);
-            //last_attack_time = Time.time;
+            Attack(false, true);
         }
+        // Not attacking or not able to attack.
         else
         {
-            lightning_bolt.SetActive(false);
-            lightning_aoe.SetActive(false);
-            midasAnimator.SetBool("isAttacking", false);
+            // If trying to attack, but not able, delay stamina regeneration.
+            if (isUsingBolt || isUsingAoe)
+            {
+                stamina.DelayRegeneration();
+            }
+            Attack(false, false);
         }
-        //}
-        /*
-        else if (Time.time > last_attack_time + attack_time)
-        {
-            lightning_bolt.SetActive(false);
-            lightning_aoe.SetActive(false);
-        }*/
+    }
 
+
+    private void Attack(bool boltAttack, bool aoeAttack)
+    {
+        lightning_bolt.SetActive(boltAttack);
+        lightning_aoe.SetActive(aoeAttack);
+        midasAnimator.SetBool("isAttacking", boltAttack || aoeAttack);
     }
 }

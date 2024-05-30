@@ -38,6 +38,15 @@ public class RangeBehavior : MonoBehaviour
             // Don't move when in range.
             enemyController.enabled = false;
             agent.destination = transform.position;
+            // Face the direction of the player.
+            if (playerTransform.position.x > transform.position.x)
+            {
+                enemyController.visualBehavior.FaceRight();
+            }
+            else if (playerTransform.position.x < transform.position.x)
+            {
+                enemyController.visualBehavior.FaceLeft();
+            }
             // Check if enough time has passed since the last shot
             if (Time.time >= lastShotTime + projectileCooldown)
             {

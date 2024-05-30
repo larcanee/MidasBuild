@@ -24,7 +24,7 @@ public class StatusBar : MonoBehaviour
     [Header("Target")]
     [Tooltip(
         "The health that will be used for the status bar.\n" +
-        "Either health or mana should be null."
+        "Health, mana, or stamina should be null."
     )]
     public Health health = null;
     [Tooltip(
@@ -34,9 +34,14 @@ public class StatusBar : MonoBehaviour
     public bool useShield = false;
     [Tooltip(
         "The mana that will be used for the status bar.\n" +
-        "Either health or mana should be null."
+        "Health, mana, or stamina should be null."
     )]
     public Mana mana = null;
+    [Tooltip(
+        "The stamina that will be used for the status bar.\n" +
+        "Health, mana, or stamina should be null."
+    )]
+    public Stamina stamina = null;
 
 
     [Header("Bar")]
@@ -119,6 +124,11 @@ public class StatusBar : MonoBehaviour
         {
             currentValue = mana.mana;
             maximumValue = mana.maxMana;
+        }
+        else if (stamina)
+        {
+            currentValue = stamina.stamina;
+            maximumValue = stamina.maxStamina;
         }
         else
         {
