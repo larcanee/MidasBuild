@@ -17,7 +17,20 @@ public class SpawnManager : MonoBehaviour
 
     public EnemyCounter enemyCounter_;
 
+    public bool start = false;
+
     void Start()
+    {
+        // // Spawn the initial wave of enemies
+        // for (int i = 0; i < initialEnemies; i++)
+        // {
+        //     SpawnEnemy();
+        // }
+        // // Schedule the first spawn
+        // nextSpawnTime = Time.time + Random.Range(spawnIntervalMin, spawnIntervalMax);
+    }
+
+    public void StartSpawn()
     {
         // Spawn the initial wave of enemies
         for (int i = 0; i < initialEnemies; i++)
@@ -26,12 +39,13 @@ public class SpawnManager : MonoBehaviour
         }
         // Schedule the first spawn
         nextSpawnTime = Time.time + Random.Range(spawnIntervalMin, spawnIntervalMax);
+        start = true;
     }
 
     void Update()
     {
         // Check if it's time to spawn a new enemy
-        if (Time.time >= nextSpawnTime && !stop)
+        if (Time.time >= nextSpawnTime && !stop && start)
         {
             SpawnEnemy();
 

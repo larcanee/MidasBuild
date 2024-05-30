@@ -69,6 +69,8 @@ public class Health : MonoBehaviour
     public EnemyCounter enemyCounter;
     public GameObject Player_Animation; //only exists in the context of the player
 
+    public GameController gameController;
+
     // Damages the player or NPC.
     // `Damage(damage)` should be used instead of `health -= damage`.
     // Returns true if the player/NPC is still alive.
@@ -130,6 +132,10 @@ public class Health : MonoBehaviour
             if (gameObject.layer == 9)
             {
                 Destroy(Player_Animation);
+            }
+            if (gameObject.CompareTag("Player"))
+            {
+                gameController.Lose();
             }
             Destroy(gameObject);
         }
